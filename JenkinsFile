@@ -1,0 +1,40 @@
+pipeline{
+    agent any
+    tools{
+        nodejs 'NodeJS19.8.1'
+    }
+    stages{
+        stage('Clone repository'){
+            steps{
+                git 'https://github.com/Cynthia-Wairimu/gallery.git'
+            }
+        }
+        stage('Install dependancies'){
+            steps{
+                sh 'npm install'
+            }
+        }
+        stage('Test'){
+            post{
+                failure{
+                   mail bcc: '', body: 'Jenkins test failure.', cc: '', from: '', replyTo: '', subject: 'Failed Test.', to: 'cynthia.wairimu@student.moringaschool.com' 
+                }
+            }        
+           steps{
+               sh 'npm test'
+           } 
+        }
+        stage('Deploy to Heroku'){
+            steps{
+               withCredentials([gitUsernamePassword(credentialsId: 'gallery2', variable: 'PASS')]) {
+                sh 'git push https://${PASS}@git.heroku.com/galleryapp.git master'
+                } 
+            }
+        }
+        stage('slack notification'){
+            steps{
+                slackSend channel: '#gallery-ip-project', message: "App successfully deployed to heroku with build id ${BUILD_ID} . Click this link to view: https://galleryapp.herokuapp.com/"
+            }
+        }
+    }
+}
