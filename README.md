@@ -1,2 +1,2 @@
 # gallery
-Gallery app, that allows user to upload photos
+A gallery app that allows user to upload photos.
